@@ -1151,14 +1151,21 @@ input, select, textarea {
 		}
 
 		#bg:after {
-			-moz-transform: scale(1.125);
-			-webkit-transform: scale(1.125);
-			-ms-transform: scale(1.125);
-			transform: scale(1.125);
-			-moz-transition: -moz-transform 0.325s ease-in-out, -moz-filter 0.325s ease-in-out;
-			-webkit-transition: -webkit-transform 0.325s ease-in-out, -webkit-filter 0.325s ease-in-out;
-			-ms-transition: -ms-transform 0.325s ease-in-out, -ms-filter 0.325s ease-in-out;
-			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
+			-moz-transform: scale(1.0);
+			-webkit-transform: scale(1.0);
+			-ms-transform: scale(1.0);
+			transform: scale(1.0);               /* ← was scale(1.125) — matches Research SVG exactly */
+
+			-moz-transition: -moz-filter 0.325s ease-in-out;
+			-webkit-transition: -webkit-filter 0.325s ease-in-out;
+			-ms-transition: -ms-filter 0.325s ease-in-out;
+			transition: filter 0.325s ease-in-out;  /* ← removed transform from transition */
+
+			-moz-filter: blur(0.18rem);
+			-webkit-filter: blur(0.18rem);
+			-ms-filter: blur(0.18rem);
+			filter: blur(0.18rem);               /* ← ADD: subtle blur when idle for depth */
+
 			background-image: url("../../images/star-system-bg.svg");
 			background-position: center;
 			background-size: cover;
@@ -1168,14 +1175,15 @@ input, select, textarea {
 		}
 
 		body.is-article-visible #bg:after {
-			-moz-transform: scale(1.0825);
-			-webkit-transform: scale(1.0825);
-			-ms-transform: scale(1.0825);
-			transform: scale(1.0825);
-			-moz-filter: blur(0.2rem);
-			-webkit-filter: blur(0.2rem);
-			-ms-filter: blur(0.2rem);
-			filter: blur(0.2rem);
+			-moz-transform: scale(1.0);
+			-webkit-transform: scale(1.0);
+			-ms-transform: scale(1.0);
+			transform: scale(1.0);               /* ← was scale(1.0825) — no scale change */
+
+			-moz-filter: none;
+			-webkit-filter: none;
+			-ms-filter: none;
+			filter: none;                        /* ← was blur(0.2rem) — goes sharp when tab opens */
 		}
 
 		body.is-preload #bg:before {
@@ -1860,4 +1868,121 @@ the HTML5 UP template's own styles.
 
 	#region-orbit {
 		pointer-events: stroke;       /* orbit is stroke-only, not fill */
+	}
+
+/* ================================================================
+   RESEARCH ARTICLE — Full-viewport override
+   Overrides the template's 40rem panel width so the interactive
+   SVG fills the entire screen, matching the background image.
+================================================================ */
+
+	#main article#research {
+		/* Escape the 40rem panel — cover the full viewport */
+		position: fixed !important;
+		top:    0 !important;
+		left:   0 !important;
+		width:  100vw !important;
+		max-width: 100vw !important;
+		height: 100vh !important;
+
+		/* Remove panel chrome */
+		padding:       0 !important;
+		background:    transparent !important;
+		border-radius: 0 !important;
+		overflow:      hidden;
+
+		/* Sit above #wrapper (z-index 3) but below modal (z-index 9999) */
+		z-index: 4 !important;
+
+		pointer-events: auto !important;
+	}
+
+	/* ── Wrapper fills the entire article ── */
+	#main article#research .rs-wrapper {
+		position: absolute !important;
+		top:    0 !important;
+		left:   0 !important;
+		right:  0 !important;
+		bottom: 0 !important;
+		width:  100% !important;
+		max-width: 100% !important;
+		height: 100% !important;
+		margin: 0 !important;
+	}
+
+	/* ── SVG fills the wrapper ── */
+	#main article#research #rs-svg {
+		position: absolute;
+		top:    0;
+		left:   0;
+		width:  100% !important;
+		height: 100% !important;
+		border-radius: 0 !important;
+	}
+
+	/* ── Title: pinned top-centre over the SVG ── */
+	#main article#research h2.major {
+		position:   absolute;
+		top:        1.2rem;
+		left:       50%;
+		transform:  translateX(-50%);
+		z-index:    6;
+		margin:     0;
+		padding-bottom: 0.35rem;
+		white-space: nowrap;
+		border-bottom-color: rgba(255, 255, 255, 0.35);
+		text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+	}
+
+	/* ── Intro text: just below the title ── */
+	#main article#research .rs-intro {
+		position:   absolute;
+		top:        4.4rem;
+		left:       50%;
+		transform:  translateX(-50%);
+		z-index:    6;
+		width:      max-content;
+		max-width:  88vw;
+		text-align: center;
+		pointer-events: none;
+	}
+
+	#main article#research .rs-intro p {
+		margin:     0;
+		font-size:  0.72rem;
+		opacity:    0.80;
+		background: rgba(5, 6, 18, 0.60);
+		padding:    0.3rem 1.2rem;
+		border-radius: 6px;
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+
+	/* ── Legend: pinned to the bottom ── */
+	#main article#research .rs-legend {
+		position: absolute;
+		bottom:   1.4rem;
+		left:     0;
+		right:    0;
+		z-index:  6;
+		margin:   0;
+		padding:  0 1rem;
+	}
+
+	/* ── Close button: must sit above the SVG ── */
+	#main article#research .close {
+		z-index: 7;
+	}
+
+	/* ── Tooltip: already position:absolute inside .rs-wrapper,
+	no change needed — getBoundingClientRect() still works ── */
+
+	/* ── Stabilise background — no scale or blur change when any panel opens ── */
+	#bg:after {
+		transform: scale(1.0) !important;
+	}
+
+	body.is-article-visible #bg:after {
+		transform: scale(1.0) !important;
+		filter:    none       !important;
 	}
