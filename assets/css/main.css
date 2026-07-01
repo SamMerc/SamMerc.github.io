@@ -1139,10 +1139,14 @@ input, select, textarea {
 			-webkit-transition-delay: 0.75s;
 			-ms-transition-delay: 0.75s;
 			transition-delay: 0.75s;
-			background-image: linear-gradient(to top, rgba(19, 21, 25, 0.5), rgba(19, 21, 25, 0.5)), url("../../images/my-bg.png");
-			background-size: auto, cover;
-			background-position: center, center;
-			background-repeat: no-repeat, no-repeat;
+			background-image: linear-gradient(
+				to top,
+				rgba(19, 21, 25, 0.55),
+				rgba(19, 21, 25, 0.55)
+			);
+			background-size: auto;
+			background-position: center;
+			background-repeat: no-repeat;
 			z-index: 2;
 		}
 
@@ -1155,10 +1159,11 @@ input, select, textarea {
 			-webkit-transition: -webkit-transform 0.325s ease-in-out, -webkit-filter 0.325s ease-in-out;
 			-ms-transition: -ms-transform 0.325s ease-in-out, -ms-filter 0.325s ease-in-out;
 			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
-			background-image: url("../../images/bg.jpg");
+			background-image: url("../../images/star-system-bg.svg");
 			background-position: center;
 			background-size: cover;
 			background-repeat: no-repeat;
+			background-color: #07080E;
 			z-index: 1;
 		}
 
