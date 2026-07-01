@@ -43,8 +43,275 @@
 						<!-- Research -->
 							<article id="research">
 								<h2 class="major">Research</h2>
-								<span class="image main"><img src="images/mountain_line.png" alt="" /></span>
-								<p>This is the research I am doing : stellar surface mapping powered by high-resolution spectroscopy (with some planet orbital architecture on the side), improving our understanding of limb darkening, and studying stellar activity at large </p>
+								<!-- ============================================================
+								RESEARCH TAB — place this inside <article id="research">
+								or whatever element holds your research tab content.
+								
+								NOTE: Place the modal div (#rs-modal) SEPARATELY, just
+								before </body>, NOT inside the article element.
+								============================================================ -->
+
+								<!-- Short intro -->
+								<div class="rs-intro">
+								<p>
+									My work covers six areas of stellar &amp; planetary astrophysics.
+									<strong>Hover</strong> over the star system to explore each topic —
+									<strong>click</strong> to read more.
+								</p>
+								</div>
+
+								<div class="rs-wrapper">
+
+								<!-- Tooltip (follows cursor) -->
+								<div id="rs-tip" class="rs-tip" aria-hidden="true"></div>
+
+								<!-- ==================== INTERACTIVE SVG ==================== -->
+								<svg id="rs-svg"
+									viewBox="0 0 1000 560"
+									xmlns="http://www.w3.org/2000/svg"
+									role="img"
+									aria-label="Interactive star system diagram with six research areas">
+
+									<defs>
+									<!-- Star: bright centre fading to dark red limb (limb darkening) -->
+									<radialGradient id="gStar" cx="42%" cy="40%" r="60%">
+										<stop offset="0%"   stop-color="#FFFDE8"/>
+										<stop offset="22%"  stop-color="#FFE540"/>
+										<stop offset="60%"  stop-color="#FF8800"/>
+										<stop offset="84%"  stop-color="#CC3E00"/>
+										<stop offset="100%" stop-color="#761200"/>
+									</radialGradient>
+
+									<!-- Star corona (soft outer glow) -->
+									<radialGradient id="gCorona" cx="50%" cy="50%" r="50%">
+										<stop offset="55%"  stop-color="rgba(255,150,50,0)"/>
+										<stop offset="78%"  stop-color="rgba(255,150,50,0.10)"/>
+										<stop offset="100%" stop-color="rgba(255,120,30,0)"/>
+									</radialGradient>
+
+									<!-- Exoplanet (blue, gas/ice giant) -->
+									<radialGradient id="gP1" cx="34%" cy="30%" r="70%">
+										<stop offset="0%"   stop-color="#C8E8FF"/>
+										<stop offset="42%"  stop-color="#3E7FD0"/>
+										<stop offset="100%" stop-color="#09185E"/>
+									</radialGradient>
+
+									<!-- Planet core (warm glow for oblateness indicator) -->
+									<radialGradient id="gCore" cx="38%" cy="32%" r="68%">
+										<stop offset="0%"   stop-color="#FFE090"/>
+										<stop offset="55%"  stop-color="#BB7800"/>
+										<stop offset="100%" stop-color="#4A2000"/>
+									</radialGradient>
+
+									<!-- Lava planet -->
+									<radialGradient id="gLava" cx="36%" cy="32%" r="68%">
+										<stop offset="0%"   stop-color="#FFB050"/>
+										<stop offset="38%"  stop-color="#FF2D00"/>
+										<stop offset="80%"  stop-color="#880000"/>
+										<stop offset="100%" stop-color="#360000"/>
+									</radialGradient>
+
+									<!-- Glow filter (used on hover) -->
+									<filter id="fGlow" x="-50%" y="-50%" width="200%" height="200%">
+										<feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b"/>
+										<feMerge>
+										<feMergeNode in="b"/>
+										<feMergeNode in="SourceGraphic"/>
+										</feMerge>
+									</filter>
+
+									<!--
+										CLIP PATHS — split the star circle into two non-overlapping regions:
+										cpLimb : left crescent  (x < 450, i.e. 80 px wide on the left side)
+										cpBody : the rest       (x ≥ 450)
+										Star centre is at x=500, radius=130, so left edge is x=370.
+									-->
+									<clipPath id="cpLimb">
+										<rect x="0" y="0" width="450" height="560"/>
+									</clipPath>
+									<clipPath id="cpBody">
+										<rect x="450" y="0" width="550" height="560"/>
+									</clipPath>
+									</defs>
+
+									<!-- ── BACKGROUND ── -->
+									<rect width="1000" height="560" fill="#07080E" rx="14"/>
+
+									<!-- Background star field (decorative dots) -->
+									<g pointer-events="none" opacity="0.80">
+									<circle cx="42"  cy="35"  r="1.1" fill="#fff" opacity="0.65"/>
+									<circle cx="115" cy="78"  r="0.7" fill="#fff" opacity="0.50"/>
+									<circle cx="198" cy="28"  r="1.0" fill="#fff" opacity="0.75"/>
+									<circle cx="353" cy="44"  r="1.2" fill="#fff" opacity="0.60"/>
+									<circle cx="565" cy="22"  r="1.0" fill="#fff" opacity="0.55"/>
+									<circle cx="610" cy="64"  r="1.3" fill="#fff" opacity="0.65"/>
+									<circle cx="762" cy="82"  r="1.1" fill="#fff" opacity="0.80"/>
+									<circle cx="841" cy="18"  r="0.9" fill="#fff" opacity="0.60"/>
+									<circle cx="912" cy="55"  r="0.8" fill="#fff" opacity="0.45"/>
+									<circle cx="175" cy="182" r="1.0" fill="#fff" opacity="0.65"/>
+									<circle cx="390" cy="514" r="1.1" fill="#fff" opacity="0.65"/>
+									<circle cx="718" cy="522" r="1.0" fill="#fff" opacity="0.75"/>
+									<circle cx="822" cy="478" r="0.7" fill="#fff" opacity="0.55"/>
+									<circle cx="48"  cy="315" r="0.9" fill="#fff" opacity="0.45"/>
+									<circle cx="948" cy="290" r="0.8" fill="#fff" opacity="0.50"/>
+									<circle cx="276" cy="68"  r="0.6" fill="#fff" opacity="0.40"/>
+									<circle cx="928" cy="508" r="1.1" fill="#fff" opacity="0.60"/>
+									</g>
+
+									<!-- ── ORBIT LINE ──
+										cx=500, cy=280 matches star centre.
+										rx=350 puts planets at x=150 (left) and x=850 (right).
+									-->
+									<!-- Visual dashed orbit (decorative, no pointer events) -->
+									<ellipse id="rs-orbit-vis"
+											cx="500" cy="280" rx="350" ry="88"
+											fill="none" stroke="#8888BB"
+											stroke-width="1.5" stroke-opacity="0.35"
+											stroke-dasharray="8,7" pointer-events="none"/>
+
+									<!-- Orbit hover highlight (opacity raised by JS) -->
+									<ellipse id="rs-orbit-hl"
+											cx="500" cy="280" rx="350" ry="88"
+											fill="none" stroke="#AAAAEE"
+											stroke-width="2.8" stroke-opacity="0"
+											stroke-dasharray="8,7" pointer-events="none"/>
+
+									<!--
+									Orbit INTERACTIVE HOTSPOT.
+									fill="none" disables pointer events on the fill, so we use:
+										pointer-events="stroke"  — only the stroke area is clickable
+										stroke-opacity="0.001"   — effectively invisible but valid
+										stroke-width="24"        — gives a 24px wide hover band
+									-->
+									<ellipse id="region-orbit"
+											cx="500" cy="280" rx="350" ry="88"
+											fill="none"
+											stroke="#fff" stroke-opacity="0.001" stroke-width="24"
+											pointer-events="stroke"
+											class="rs-region" data-key="orbit" cursor="pointer"/>
+
+									<!-- ── STAR CORONA ── -->
+									<circle cx="500" cy="280" r="195"
+											fill="url(#gCorona)" pointer-events="none"/>
+
+									<!-- ── STAR BODY (visual) ── -->
+									<circle id="rs-star-vis" cx="500" cy="280" r="130"
+											fill="url(#gStar)" pointer-events="none"/>
+
+									<!-- Active region sunspots (hidden by default; revealed on hover via JS) -->
+									<g id="rs-spots" opacity="0" pointer-events="none">
+									<circle cx="538" cy="248" r="14" fill="#280000" opacity="0.75"/>
+									<circle cx="474" cy="272" r="9"  fill="#280000" opacity="0.68"/>
+									<circle cx="558" cy="295" r="12" fill="#280000" opacity="0.62"/>
+									<circle cx="490" cy="242" r="7"  fill="#280000" opacity="0.72"/>
+									<circle cx="516" cy="312" r="9"  fill="#280000" opacity="0.60"/>
+									<!-- Faculae (bright magnetic features) -->
+									<circle cx="462" cy="262" r="5" fill="#FFFFF0" opacity="0.55"/>
+									<circle cx="548" cy="268" r="4" fill="#FFFFF0" opacity="0.45"/>
+									</g>
+
+									<!-- Limb hover tint (left crescent, fill changed by JS) -->
+									<circle id="rs-limb-hl" cx="500" cy="280" r="130"
+											clip-path="url(#cpLimb)"
+											fill="rgba(255,220,90,0)" pointer-events="none"/>
+
+									<!-- ── STAR INTERACTIVE REGIONS ──
+										Both are transparent-filled circles clipped to non-overlapping halves.
+										region-active is placed FIRST (lower z-order).
+										region-limb is placed SECOND (higher z-order, covers the left crescent).
+										Using fill="rgba(...,0.001)" instead of fill="none" so pointer events work.
+									-->
+									<circle id="region-active"
+											cx="500" cy="280" r="130"
+											clip-path="url(#cpBody)"
+											fill="rgba(255,80,60,0.001)"
+											pointer-events="all"
+											class="rs-region" data-key="active-regions" cursor="pointer"/>
+
+									<circle id="region-limb"
+											cx="500" cy="280" r="130"
+											clip-path="url(#cpLimb)"
+											fill="rgba(255,200,80,0.001)"
+											pointer-events="all"
+											class="rs-region" data-key="limb" cursor="pointer"/>
+
+									<!-- ── PLANET 2 — LAVA PLANET (left, x=150=500−350) ── -->
+									<circle cx="150" cy="280" r="30"
+											fill="rgba(255,60,0,0.10)" pointer-events="none"/><!-- ambient glow -->
+									<circle id="rs-lava-vis" cx="150" cy="280" r="22"
+											fill="url(#gLava)" pointer-events="none"/>
+									<!-- Surface fissures (decorative) -->
+									<g pointer-events="none" opacity="0.55">
+									<line x1="143" y1="272" x2="157" y2="286" stroke="#FF7700" stroke-width="1.0"/>
+									<line x1="153" y1="271" x2="144" y2="284" stroke="#FF5500" stroke-width="0.8"/>
+									<line x1="139" y1="281" x2="158" y2="278" stroke="#FF6600" stroke-width="0.8"/>
+									</g>
+									<!-- Lava glow ring (opacity raised by JS on hover) -->
+									<circle id="rs-lava-hl" cx="150" cy="280" r="22"
+											fill="none" stroke="#FF5500" stroke-width="4"
+											opacity="0" pointer-events="none"/>
+									<!-- Lava interactive region -->
+									<circle id="region-lava"
+											cx="150" cy="280" r="32"
+											fill="rgba(255,100,0,0.001)"
+											pointer-events="all"
+											class="rs-region" data-key="lava" cursor="pointer"/>
+
+									<!-- ── PLANET 1 — EXOPLANET (right, x=850=500+350) ── -->
+									<!-- Atmosphere halo (visual) -->
+									<circle id="rs-atmo-vis" cx="850" cy="280" r="38"
+											fill="rgba(70,150,255,0.10)"
+											stroke="rgba(100,185,255,0.38)" stroke-width="2.5"
+											pointer-events="none"/>
+									<!-- Planet body (visual; JS applies scale transform for oblateness) -->
+									<circle id="rs-p1-vis" cx="850" cy="280" r="25"
+											fill="url(#gP1)" pointer-events="none"/>
+									<!-- Core indicator (subtle warm glow; brightened on oblateness hover) -->
+									<circle id="rs-core-vis" cx="850" cy="280" r="11"
+											fill="url(#gCore)" opacity="0.50" pointer-events="none"/>
+
+									<!--
+									Atmosphere interactive region (covers full circle r=38).
+									Oblateness region (r=14) sits on top — inner clicks → oblateness,
+									outer ring (14<r<38) clicks → atmosphere.
+									-->
+									<circle id="region-atmosphere"
+											cx="850" cy="280" r="38"
+											fill="rgba(70,150,255,0.001)"
+											pointer-events="all"
+											class="rs-region" data-key="atmosphere" cursor="pointer"/>
+									<circle id="region-oblateness"
+											cx="850" cy="280" r="14"
+											fill="rgba(200,150,30,0.001)"
+											pointer-events="all"
+											class="rs-region" data-key="oblateness" cursor="pointer"/>
+
+								</svg><!-- end SVG -->
+
+								<!-- Legend buttons (also open the modal on click) -->
+								<div class="rs-legend" role="list" aria-label="Research areas">
+									<button class="rs-lb" data-key="limb">
+									<span class="rs-dot" style="background:#FFBC30;"></span>Limb Darkening
+									</button>
+									<button class="rs-lb" data-key="active-regions">
+									<span class="rs-dot" style="background:#FF5550;"></span>Active Regions
+									</button>
+									<button class="rs-lb" data-key="orbit">
+									<span class="rs-dot" style="background:#9999CC;"></span>Rossiter–McLaughlin
+									</button>
+									<button class="rs-lb" data-key="atmosphere">
+									<span class="rs-dot" style="background:#55AAFF;"></span>Exoplanet Atmospheres
+									</button>
+									<button class="rs-lb" data-key="lava">
+									<span class="rs-dot" style="background:#FF4500;"></span>Lava Planets
+									</button>
+									<button class="rs-lb" data-key="oblateness">
+									<span class="rs-dot" style="background:#CCAA30;"></span>Planetary Oblateness
+									</button>
+								</div>
+
+								</div><!-- end .rs-wrapper -->
+
 							</article>
 
 						<!-- About -->
@@ -339,12 +606,28 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 		<!-- BG -->
 			<div id="bg"></div>
 
+		<!-- ============================================================
+		MODAL — place this OUTSIDE the research article, just before </body>
+		The template's own z-index layering won't interfere with it there.
+		============================================================ -->
+			<div id="rs-modal" class="rs-modal-bg" aria-hidden="true"
+				role="dialog" aria-modal="true" aria-labelledby="rs-modal-title">
+				<div class="rs-modal-box" tabindex="-1">
+					<button class="rs-modal-x" id="rs-modal-x" aria-label="Close">&#10005;</button>
+					<div  class="rs-modal-emoji" id="rs-modal-emoji" aria-hidden="true"></div>
+					<h3   class="rs-modal-h"    id="rs-modal-title"></h3>
+					<p    class="rs-modal-p"    id="rs-modal-body"></p>
+					<div  class="rs-modal-tags" id="rs-modal-tags"></div>
+				</div>
+			</div>
+
 		<!-- Scripts -->
 			<script src="assets/js/jquery.min.js"></script>
 			<script src="assets/js/browser.min.js"></script>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script src="assets/js/research.js"></script>
 
 	</body>
 </html>
