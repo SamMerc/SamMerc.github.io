@@ -131,10 +131,10 @@
     },
     'active-regions': {
       enter: function () {
-        document.getElementById('rs-spots').setAttribute('opacity', '1');
+        document.getElementById('rs-star-img').setAttribute('href', 'images/star_spots.gif');
       },
       leave: function () {
-        document.getElementById('rs-spots').setAttribute('opacity', '0');
+        document.getElementById('rs-star-img').setAttribute('href', 'images/star_spots.png');
       }
     },
     'orbit': {

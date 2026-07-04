@@ -133,6 +133,11 @@
 									<clipPath id="cpBody">
 										<rect x="450" y="0" width="550" height="560"/>
 									</clipPath>
+
+									<!-- Circular clip matching the star disc (cx=500, cy=280, r=130) -->
+									<clipPath id="cpStarDisc">
+										<circle cx="500" cy="280" r="130"/>
+									</clipPath>
 									</defs>
 
 									<!-- ── BACKGROUND ── -->
@@ -300,21 +305,19 @@
 									<circle cx="500" cy="280" r="195"
 											fill="url(#gCorona)" pointer-events="none"/>
 
-									<!-- ── STAR BODY (visual) ── -->
+									<!-- ── STAR BODY (visual fallback, sits under the rendered image) ── -->
 									<circle id="rs-star-vis" cx="500" cy="280" r="130"
 											fill="url(#gStar)" pointer-events="none"/>
 
-									<!-- Active region sunspots (hidden by default; revealed on hover via JS) -->
-									<g id="rs-spots" opacity="0" pointer-events="none">
-									<circle cx="538" cy="248" r="14" fill="#280000" opacity="0.75"/>
-									<circle cx="474" cy="272" r="9"  fill="#280000" opacity="0.68"/>
-									<circle cx="558" cy="295" r="12" fill="#280000" opacity="0.62"/>
-									<circle cx="490" cy="242" r="7"  fill="#280000" opacity="0.72"/>
-									<circle cx="516" cy="312" r="9"  fill="#280000" opacity="0.60"/>
-									<!-- Faculae (bright magnetic features) -->
-									<circle cx="462" cy="262" r="5" fill="#FFFFF0" opacity="0.55"/>
-									<circle cx="548" cy="268" r="4" fill="#FFFFF0" opacity="0.45"/>
-									</g>
+									<!-- Rendered star (jaxoplanet). Static star_spots.png by default — this is
+										 the GIF's frame-0 orientation, so swapping to the GIF on hover starts
+										 the rotation from exactly this look with no visible jump. -->
+									<image id="rs-star-img"
+											x="370" y="150" width="260" height="260"
+											href="images/star_spots.png"
+											clip-path="url(#cpStarDisc)"
+											preserveAspectRatio="xMidYMid slice"
+											pointer-events="none"/>
 
 									<!-- Limb hover tint (left crescent, fill changed by JS) -->
 									<circle id="rs-limb-hl" cx="500" cy="280" r="130"
