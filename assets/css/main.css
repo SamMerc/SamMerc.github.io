@@ -1870,6 +1870,11 @@ the HTML5 UP template's own styles.
 		pointer-events: stroke;       /* orbit is stroke-only, not fill */
 	}
 
+	#rs-orbit-hl-back,
+	#rs-orbit-hl-front {
+		transition: opacity 0.3s ease-in-out;
+	}
+
 /* ================================================================
    RESEARCH ARTICLE — Full-viewport override
    Overrides the template's 40rem panel width so the interactive

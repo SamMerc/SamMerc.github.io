@@ -141,6 +141,35 @@
 									<clipPath id="cpStarDisc">
 										<circle cx="500" cy="280" r="130"/>
 									</clipPath>
+
+									<!-- Orbit "pen stroke" fades — same colour as the orbit line/highlight,
+										 stop-opacity ramping between 0 and full so the stroke fades in
+										 from nothing, holds solid through the middle, then fades back
+										 out to nothing at the other tip (mirrored, either side of the
+										 small unclosed gap next to the left apsis). Coordinates match
+										 each fade arc's start/end points (in the orbit's unrotated
+										 local space); each gradient is reused by two split <path>s
+										 (one front-of-star, one behind) that share the same geometry. -->
+									<linearGradient id="gOrbitFadeIn" gradientUnits="userSpaceOnUse"
+											x1="231.9" y1="336.6" x2="161.9" y2="257.2">
+										<stop offset="0%"   stop-color="#8888BB" stop-opacity="0"/>
+										<stop offset="100%" stop-color="#8888BB" stop-opacity="0.35"/>
+									</linearGradient>
+									<linearGradient id="gOrbitFadeOut" gradientUnits="userSpaceOnUse"
+											x1="590.6" y1="365.0" x2="275.0" y2="347.4">
+										<stop offset="0%"   stop-color="#8888BB" stop-opacity="0.35"/>
+										<stop offset="100%" stop-color="#8888BB" stop-opacity="0"/>
+									</linearGradient>
+									<linearGradient id="gOrbitFadeInHl" gradientUnits="userSpaceOnUse"
+											x1="231.9" y1="336.6" x2="161.9" y2="257.2">
+										<stop offset="0%"   stop-color="#AAAAEE" stop-opacity="0"/>
+										<stop offset="100%" stop-color="#AAAAEE" stop-opacity="1"/>
+									</linearGradient>
+									<linearGradient id="gOrbitFadeOutHl" gradientUnits="userSpaceOnUse"
+											x1="590.6" y1="365.0" x2="275.0" y2="347.4">
+										<stop offset="0%"   stop-color="#AAAAEE" stop-opacity="1"/>
+										<stop offset="100%" stop-color="#AAAAEE" stop-opacity="0"/>
+									</linearGradient>
 									</defs>
 
 									<!-- ── BACKGROUND ── -->
@@ -275,20 +304,53 @@
 									<!-- ── ORBIT LINE ──
 										cx=500, cy=280 matches star centre.
 										rx=350 puts planets at x=150 (left) and x=850 (right).
+										Traced as arcs (not a closed ellipse) split at the two apsides
+										(local t=0° and t=180°, the line-of-nodes where an inclined
+										ring crosses the sky plane): the t=0°→180° half is drawn AFTER
+										the star (BEHIND-half further below, near "STAR CORONA")
+										so it passes in front of the disc, while the t=180°→360° half
+										stays here, before the star, so it passes behind it. The pen
+										stroke fades in/out (opacity 0 → full → 0) around a small
+										unclosed gap just past the left apsis (t≈165°) rather than
+										exactly on it — see gOrbitFadeIn/Out in <defs>. Every arc sits
+										in a <g> carrying the -20° inclination rotate so coordinates
+										below stay in simple, unrotated ellipse space.
 									-->
-									<!-- Visual dashed orbit (decorative, no pointer events) -->
-									<ellipse id="rs-orbit-vis"
-											cx="500" cy="280" rx="350" ry="88"
+									<!-- Visual orbit line — BACK half (t=180°→360°), behind the star. -->
+									<g transform="rotate(-20 500 280)" pointer-events="none">
+									<!-- Hover wiggle: oscillates the inclination angle ±5° about the
+										 rest tilt (-20°) to suggest the spin-orbit angle varying.
+										 Dormant (begin="indefinite") until JS starts/stops it on
+										 orbit hover; reverts to the static -20° rotate when stopped. -->
+									<animateTransform id="wiggleVisBack" attributeName="transform"
+											type="rotate" additive="replace" fill="remove"
+											begin="indefinite" dur="2.4s" repeatCount="indefinite"
+											calcMode="linear"
+											keyTimes="0;0.0417;0.0833;0.125;0.1667;0.2083;0.25;0.2917;0.3333;0.375;0.4167;0.4583;0.5;0.5417;0.5833;0.625;0.6667;0.7083;0.75;0.7917;0.8333;0.875;0.9167;0.9583;1"
+											values="-20 500 280;-18.71 500 280;-17.50 500 280;-16.46 500 280;-15.67 500 280;-15.17 500 280;-15 500 280;-15.17 500 280;-15.67 500 280;-16.46 500 280;-17.50 500 280;-18.71 500 280;-20 500 280;-21.29 500 280;-22.50 500 280;-23.54 500 280;-24.33 500 280;-24.83 500 280;-25 500 280;-24.83 500 280;-24.33 500 280;-23.54 500 280;-22.50 500 280;-21.29 500 280;-20 500 280"/>
+									<path d="M 150 280 A 350 88 0 0 1 161.9 257.2"
+											fill="none" stroke="url(#gOrbitFadeIn)"
+											stroke-width="1.5"/>
+									<path d="M 161.9 257.2 A 350 88 0 0 1 850 280"
 											fill="none" stroke="#8888BB"
-											stroke-width="1.5" stroke-opacity="0.35"
-											stroke-dasharray="8,7" pointer-events="none"/>
+											stroke-width="1.5" stroke-opacity="0.35"/>
+									</g>
 
-									<!-- Orbit hover highlight (opacity raised by JS) -->
-									<ellipse id="rs-orbit-hl"
-											cx="500" cy="280" rx="350" ry="88"
-											fill="none" stroke="#AAAAEE"
-											stroke-width="2.8" stroke-opacity="0"
-											stroke-dasharray="8,7" pointer-events="none"/>
+									<!-- Orbit hover highlight — BACK half (opacity raised by JS). -->
+									<g id="rs-orbit-hl-back" opacity="0" pointer-events="none"
+											transform="rotate(-20 500 280)">
+									<animateTransform id="wiggleHlBack" attributeName="transform"
+											type="rotate" additive="replace" fill="remove"
+											begin="indefinite" dur="2.4s" repeatCount="indefinite"
+											calcMode="linear"
+											keyTimes="0;0.0417;0.0833;0.125;0.1667;0.2083;0.25;0.2917;0.3333;0.375;0.4167;0.4583;0.5;0.5417;0.5833;0.625;0.6667;0.7083;0.75;0.7917;0.8333;0.875;0.9167;0.9583;1"
+											values="-20 500 280;-18.71 500 280;-17.50 500 280;-16.46 500 280;-15.67 500 280;-15.17 500 280;-15 500 280;-15.17 500 280;-15.67 500 280;-16.46 500 280;-17.50 500 280;-18.71 500 280;-20 500 280;-21.29 500 280;-22.50 500 280;-23.54 500 280;-24.33 500 280;-24.83 500 280;-25 500 280;-24.83 500 280;-24.33 500 280;-23.54 500 280;-22.50 500 280;-21.29 500 280;-20 500 280"/>
+									<path d="M 150 280 A 350 88 0 0 1 161.9 257.2"
+											fill="none" stroke="url(#gOrbitFadeInHl)"
+											stroke-width="2.8"/>
+									<path d="M 161.9 257.2 A 350 88 0 0 1 850 280"
+											fill="none" stroke="#AAAAEE" stroke-width="2.8"/>
+									</g>
 
 									<!--
 									Orbit INTERACTIVE HOTSPOT.
@@ -296,13 +358,16 @@
 										pointer-events="stroke"  — only the stroke area is clickable
 										stroke-opacity="0.001"   — effectively invisible but valid
 										stroke-width="24"        — gives a 24px wide hover band
+									Kept as one closed ellipse (covering both halves) since the star's
+									visual elements all have pointer-events="none" and never block it.
 									-->
 									<ellipse id="region-orbit"
 											cx="500" cy="280" rx="350" ry="88"
 											fill="none"
 											stroke="#fff" stroke-opacity="0.001" stroke-width="24"
 											pointer-events="stroke"
-											class="rs-region" data-key="orbit" cursor="pointer"/>
+											class="rs-region" data-key="orbit" cursor="pointer"
+											transform="rotate(-20 500 280)"/>
 
 									<!-- ── STAR CORONA ── -->
 									<circle cx="500" cy="280" r="148"
@@ -321,6 +386,46 @@
 											clip-path="url(#cpStarDisc)"
 											preserveAspectRatio="xMidYMid slice"
 											pointer-events="none"/>
+
+									<!-- Visual orbit line — FRONT half (t=0°→180°), in front of the star.
+										 Continues from the BACK half above; see the ORBIT LINE comment
+										 near the top of the SVG for the full geometry explanation. -->
+									<g transform="rotate(-20 500 280)" pointer-events="none">
+									<animateTransform id="wiggleVisFront" attributeName="transform"
+											type="rotate" additive="replace" fill="remove"
+											begin="indefinite" dur="2.4s" repeatCount="indefinite"
+											calcMode="linear"
+											keyTimes="0;0.0417;0.0833;0.125;0.1667;0.2083;0.25;0.2917;0.3333;0.375;0.4167;0.4583;0.5;0.5417;0.5833;0.625;0.6667;0.7083;0.75;0.7917;0.8333;0.875;0.9167;0.9583;1"
+											values="-20 500 280;-18.71 500 280;-17.50 500 280;-16.46 500 280;-15.67 500 280;-15.17 500 280;-15 500 280;-15.17 500 280;-15.67 500 280;-16.46 500 280;-17.50 500 280;-18.71 500 280;-20 500 280;-21.29 500 280;-22.50 500 280;-23.54 500 280;-24.33 500 280;-24.83 500 280;-25 500 280;-24.83 500 280;-24.33 500 280;-23.54 500 280;-22.50 500 280;-21.29 500 280;-20 500 280"/>
+									<path d="M 850 280 A 350 88 0 0 1 590.6 365.0"
+											fill="none" stroke="#8888BB"
+											stroke-width="1.5" stroke-opacity="0.35"/>
+									<path d="M 590.6 365.0 A 350 88 0 0 1 275.0 347.4"
+											fill="none" stroke="url(#gOrbitFadeOut)"
+											stroke-width="1.5"/>
+									<path d="M 231.9 336.6 A 350 88 0 0 1 150 280"
+											fill="none" stroke="url(#gOrbitFadeIn)"
+											stroke-width="1.5"/>
+									</g>
+
+									<!-- Orbit hover highlight — FRONT half (opacity raised by JS). -->
+									<g id="rs-orbit-hl-front" opacity="0" pointer-events="none"
+											transform="rotate(-20 500 280)">
+									<animateTransform id="wiggleHlFront" attributeName="transform"
+											type="rotate" additive="replace" fill="remove"
+											begin="indefinite" dur="2.4s" repeatCount="indefinite"
+											calcMode="linear"
+											keyTimes="0;0.0417;0.0833;0.125;0.1667;0.2083;0.25;0.2917;0.3333;0.375;0.4167;0.4583;0.5;0.5417;0.5833;0.625;0.6667;0.7083;0.75;0.7917;0.8333;0.875;0.9167;0.9583;1"
+											values="-20 500 280;-18.71 500 280;-17.50 500 280;-16.46 500 280;-15.67 500 280;-15.17 500 280;-15 500 280;-15.17 500 280;-15.67 500 280;-16.46 500 280;-17.50 500 280;-18.71 500 280;-20 500 280;-21.29 500 280;-22.50 500 280;-23.54 500 280;-24.33 500 280;-24.83 500 280;-25 500 280;-24.83 500 280;-24.33 500 280;-23.54 500 280;-22.50 500 280;-21.29 500 280;-20 500 280"/>
+									<path d="M 850 280 A 350 88 0 0 1 590.6 365.0"
+											fill="none" stroke="#AAAAEE" stroke-width="2.8"/>
+									<path d="M 590.6 365.0 A 350 88 0 0 1 275.0 347.4"
+											fill="none" stroke="url(#gOrbitFadeOutHl)"
+											stroke-width="2.8"/>
+									<path d="M 231.9 336.6 A 350 88 0 0 1 150 280"
+											fill="none" stroke="url(#gOrbitFadeInHl)"
+											stroke-width="2.8"/>
+									</g>
 
 									<!-- ── STAR INTERACTIVE REGIONS ──
 										Transparent-filled circles clipped to their hotspot shape.

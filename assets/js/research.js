@@ -142,10 +142,18 @@
     },
     'orbit': {
       enter: function () {
-        document.getElementById('rs-orbit-hl').setAttribute('stroke-opacity', '0.75');
+        document.getElementById('rs-orbit-hl-back').setAttribute('opacity', '0.75');
+        document.getElementById('rs-orbit-hl-front').setAttribute('opacity', '0.75');
+        ['wiggleVisBack', 'wiggleVisFront', 'wiggleHlBack', 'wiggleHlFront'].forEach(function (id) {
+          document.getElementById(id).beginElement();
+        });
       },
       leave: function () {
-        document.getElementById('rs-orbit-hl').setAttribute('stroke-opacity', '0');
+        document.getElementById('rs-orbit-hl-back').setAttribute('opacity', '0');
+        document.getElementById('rs-orbit-hl-front').setAttribute('opacity', '0');
+        ['wiggleVisBack', 'wiggleVisFront', 'wiggleHlBack', 'wiggleHlFront'].forEach(function (id) {
+          document.getElementById(id).endElement();
+        });
       }
     },
     'atmosphere': {
@@ -237,6 +245,18 @@
 
   /* ── 6. LEGEND BUTTON LISTENERS ────────────────────── */
   legendBtns.forEach(function (btn) {
+    var key = btn.dataset.key;
+    /* 'limb' has no hoverHandlers entry of its own — the pulsation GIF
+       effect it represents lives under 'limb-pulse' (see RESEARCH_DATA). */
+    var h = hoverHandlers[key === 'limb' ? 'limb-pulse' : key];
+
+    btn.addEventListener('mouseenter', function () {
+      if (h) h.enter();
+    });
+    btn.addEventListener('mouseleave', function () {
+      if (h) h.leave();
+    });
+
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       console.log('[research.js] Legend button clicked:', btn.dataset.key);
