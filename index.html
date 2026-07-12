@@ -85,8 +85,8 @@
 
 									<!-- Star corona (soft outer glow) -->
 									<radialGradient id="gCorona" cx="50%" cy="50%" r="50%">
-										<stop offset="55%"  stop-color="rgba(255,150,50,0)"/>
-										<stop offset="78%"  stop-color="rgba(255,150,50,0.10)"/>
+										<stop offset="80%"  stop-color="rgba(255,150,50,0)"/>
+										<stop offset="90%"  stop-color="rgba(255,150,50,0.10)"/>
 										<stop offset="100%" stop-color="rgba(255,120,30,0)"/>
 									</radialGradient>
 
@@ -122,16 +122,19 @@
 									</filter>
 
 									<!--
-										CLIP PATHS — split the star circle into two non-overlapping regions:
-										cpLimb : left crescent  (x < 450, i.e. 80 px wide on the left side)
-										cpBody : the rest       (x ≥ 450)
+										CLIP PATHS — split the star circle:
+										cpBody : left of x=450 is dead space (no region there any more);
+										         region-active still uses the x ≥ 450 half of the disc.
 										Star centre is at x=500, radius=130, so left edge is x=370.
 									-->
-									<clipPath id="cpLimb">
-										<rect x="0" y="0" width="450" height="560"/>
-									</clipPath>
 									<clipPath id="cpBody">
 										<rect x="450" y="0" width="550" height="560"/>
+									</clipPath>
+
+									<!-- Top-left quarter of the star disc (cx=500, cy=280, r=130) —
+										 dedicated hotspot for the limb-darkening pulsation GIF. -->
+									<clipPath id="cpTopLeft">
+										<rect x="370" y="150" width="130" height="130"/>
 									</clipPath>
 
 									<!-- Circular clip matching the star disc (cx=500, cy=280, r=130) -->
@@ -302,7 +305,7 @@
 											class="rs-region" data-key="orbit" cursor="pointer"/>
 
 									<!-- ── STAR CORONA ── -->
-									<circle cx="500" cy="280" r="195"
+									<circle cx="500" cy="280" r="148"
 											fill="url(#gCorona)" pointer-events="none"/>
 
 									<!-- ── STAR BODY (visual fallback, sits under the rendered image) ── -->
@@ -319,15 +322,10 @@
 											preserveAspectRatio="xMidYMid slice"
 											pointer-events="none"/>
 
-									<!-- Limb hover tint (left crescent, fill changed by JS) -->
-									<circle id="rs-limb-hl" cx="500" cy="280" r="130"
-											clip-path="url(#cpLimb)"
-											fill="rgba(255,220,90,0)" pointer-events="none"/>
-
 									<!-- ── STAR INTERACTIVE REGIONS ──
-										Both are transparent-filled circles clipped to non-overlapping halves.
-										region-active is placed FIRST (lower z-order).
-										region-limb is placed SECOND (higher z-order, covers the left crescent).
+										Transparent-filled circles clipped to their hotspot shape.
+										region-active is placed FIRST (lower z-order, covers x ≥ 450).
+										region-limb-pulse is placed SECOND (higher z-order, top-left corner).
 										Using fill="rgba(...,0.001)" instead of fill="none" so pointer events work.
 									-->
 									<circle id="region-active"
@@ -337,12 +335,14 @@
 											pointer-events="all"
 											class="rs-region" data-key="active-regions" cursor="pointer"/>
 
-									<circle id="region-limb"
+									<!-- Top-left corner hotspot — triggers the limb-darkening pulsation GIF.
+										 Layered last so it takes priority over region-active underneath it. -->
+									<circle id="region-limb-pulse"
 											cx="500" cy="280" r="130"
-											clip-path="url(#cpLimb)"
-											fill="rgba(255,200,80,0.001)"
+											clip-path="url(#cpTopLeft)"
+											fill="rgba(255,230,150,0.001)"
 											pointer-events="all"
-											class="rs-region" data-key="limb" cursor="pointer"/>
+											class="rs-region" data-key="limb-pulse" cursor="pointer"/>
 
 									<!-- ── PLANET 2 — LAVA PLANET (left, x=150=500−350) ── -->
 									<circle cx="150" cy="280" r="30"

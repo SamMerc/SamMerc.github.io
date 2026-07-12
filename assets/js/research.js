@@ -79,6 +79,11 @@
     }
   };
 
+  /* The top-right hotspot is a second entry point into the same Limb Darkening
+     topic (it visualises the effect via a pulsating GIF instead of a tint) —
+     reuse the 'limb' content rather than duplicating it. */
+  RESEARCH_DATA['limb-pulse'] = RESEARCH_DATA['limb'];
+
   /* ── 2. DOM REFERENCES — each one checked individually ── */
   var svg = document.getElementById('rs-svg');
   if (!svg) {
@@ -119,19 +124,17 @@
 
   /* ── 3. HOVER EFFECTS ────────────────────────────────── */
   var hoverHandlers = {
-    'limb': {
-      enter: function () {
-        document.getElementById('rs-limb-hl')
-                .setAttribute('fill', 'rgba(255,220,90,0.20)');
-      },
-      leave: function () {
-        document.getElementById('rs-limb-hl')
-                .setAttribute('fill', 'rgba(255,220,90,0)');
-      }
-    },
     'active-regions': {
       enter: function () {
         document.getElementById('rs-star-img').setAttribute('href', 'images/star_spots.gif');
+      },
+      leave: function () {
+        document.getElementById('rs-star-img').setAttribute('href', 'images/star_spots.png');
+      }
+    },
+    'limb-pulse': {
+      enter: function () {
+        document.getElementById('rs-star-img').setAttribute('href', 'images/star_pulse.gif');
       },
       leave: function () {
         document.getElementById('rs-star-img').setAttribute('href', 'images/star_spots.png');

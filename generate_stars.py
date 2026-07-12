@@ -1,10 +1,10 @@
 """
 generate_stars.py
 -----------------
-Generates two star PNGs using jaxoplanet:
-  images/star_clean.png  — uniform star with limb darkening only
+Generates star imagery using jaxoplanet:
   images/star_spots.png  — star with active regions (surface features)
-  images/star_spots.gif  — animated stellar activity, sinusoidal wave pattern
+  images/star_spots.gif  — active regions rotating into and out of view
+  images/star_pulse.gif  — limb-darkening strength pulsating (spots fixed)
 
 Run once locally:
   python generate_stars.py
@@ -40,6 +40,9 @@ STELLAR_CMAP = mcolors.LinearSegmentedColormap.from_list(
         "#FDE650",   # yellow
     ]
 )
+
+# Base quadratic limb-darkening coefficients (u1, u2) shared by every render.
+u_star = (0.5, 0.2)
 # ═════════════════════════════════════════════════════════════════════════════════
 def render_surface_to_png(surface, filepath, theta=0.0, verbose=True):
     """
@@ -126,6 +129,36 @@ def render_surface_to_png(surface, filepath, theta=0.0, verbose=True):
         print(f'  Saved  →  {filepath}  ({w} × {h} px)')
 
 
+def assemble_gif(png_paths, gif_path, fps):
+    """
+    Read back a sequence of rendered PNG frames, composite them onto black
+    (GIF has no alpha channel), quantise with dithering, and save a looping GIF.
+    Shared by every animation below — only the per-frame Surface differs.
+    """
+    frames = [imageio.v2.imread(p) for p in png_paths]
+
+    pil_frames = []
+    for frame_rgba in frames:
+        img_rgba = Image.fromarray(frame_rgba, 'RGBA')
+        bg = Image.new('RGB', img_rgba.size, (0, 0, 0))
+        bg.paste(img_rgba, mask=img_rgba.split()[3])   # use alpha as mask
+
+        # Quantise to 256 colours with Floyd–Steinberg dithering (dither=1)
+        pil_frames.append(bg.quantize(colors=256, dither=1))
+
+    frame_w, frame_h = pil_frames[0].size
+    pil_frames[0].save(
+        gif_path,
+        save_all      = True,
+        append_images = pil_frames[1:],
+        optimize      = False,
+        duration      = int(1000 / fps),   # ms per frame
+        loop          = 0,                 # loop forever
+    )
+    print(f'  Saved  →  {gif_path}  '
+          f'({frame_w} × {frame_h} px, {len(png_paths)} frames @ {fps} fps)')
+
+
 # ═════════════════════════════════════════════════════════════════════════════════
 # IMAGE — Star with active regions  (static snapshot)
 # ═════════════════════════════════════════════════════════════════════════════════
@@ -187,8 +220,7 @@ surface_frame = Surface(
 )
 
 # ── Per-frame rendering ───────────────────────────────────────────────────────
-gif_frames = []   # list of (H × W × 4) uint8 arrays, one per frame
-tmp_paths  = []   # temporary PNG paths, removed after GIF is built
+tmp_paths = []   # temporary PNG paths, removed after GIF is built
 
 for i in range(N_FRAMES):
 
@@ -199,42 +231,60 @@ for i in range(N_FRAMES):
     tmp_path = os.path.join(OUTPUT_DIR, f'_frame_{i:04d}.png')
     render_surface_to_png(surface_frame, tmp_path, theta=theta, verbose=False)
     tmp_paths.append(tmp_path)
-
-    # Read back at full resolution (SIZE_INCHES × DPI px) as RGBA
-    gif_frames.append(imageio.v2.imread(tmp_path))
     print(f'  Frame {i + 1:3d} / {N_FRAMES}', end='\r')
 
 print()
+assemble_gif(tmp_paths, os.path.join(OUTPUT_DIR, 'star_spots.gif'), FPS)
 
-# ── Assemble GIF at native PNG resolution ─────────────────────────────────────
-gif_path   = os.path.join(OUTPUT_DIR, 'star_spots.gif')
-pil_frames = []
-
-for frame_rgba in gif_frames:
-    # Alpha-composite RGBA frame onto a black background
-    img_rgba = Image.fromarray(frame_rgba, 'RGBA')
-    bg       = Image.new('RGB', img_rgba.size, (0, 0, 0))
-    bg.paste(img_rgba, mask=img_rgba.split()[3])   # use alpha as mask
-
-    # Quantise to 256 colours with Floyd–Steinberg dithering (dither=1)
-    pil_frames.append(bg.quantize(colors=256, dither=1))
-
-frame_w, frame_h = pil_frames[0].size
-
-pil_frames[0].save(
-    gif_path,
-    save_all      = True,
-    append_images = pil_frames[1:],
-    optimize      = False,
-    duration      = int(1000 / FPS),   # ms per frame
-    loop          = 0,                 # loop forever
-)
-
-print(f'  Saved  →  {gif_path}  '
-      f'({frame_w} × {frame_h} px, {N_FRAMES} frames @ {FPS} fps)')
-
-# ── Clean up temporary frame files ────────────────────────────────────────────
 for p in tmp_paths:
     os.remove(p)
 
-print('\nDone — PNGs and GIF written to images/')
+
+# ═════════════════════════════════════════════════════════════════════════════════
+# GIF — Stellar surface pulsating (limb-darkening strength oscillating)
+#
+# Pulsation strategy
+# ───────────────────
+# The active-region spot pattern and viewing angle (theta=0) are held FIXED —
+# identical to star_spots.png/star_spots.gif's starting frame. What changes
+# from frame to frame is the quadratic limb-darkening coefficients `u`: both
+# coefficients are scaled by a common factor that oscillates sinusoidally
+# around 1.0, completing PULSE_CYCLES full breaths per loop:
+#
+#   scale(i) = 1 + PULSE_DEPTH · sin(2π · PULSE_CYCLES · i / N_FRAMES_PULSE)
+#
+# Higher u ⇒ stronger limb darkening (a brighter, sharper core and a darker
+# rim); lower u ⇒ a flatter, more uniformly lit disc. Cycling u therefore
+# reads as the star's core breathing brighter and dimmer. Since PULSE_CYCLES
+# is an integer number of full sine periods, frame N_FRAMES_PULSE would still
+# be pixel-identical to frame 0 — omitting it and looping gives a seamless
+# cycle, the same trick used for the rotation GIF above.
+# ═════════════════════════════════════════════════════════════════════════════════
+print('Rendering star_pulse.gif ...')
+
+N_FRAMES_PULSE = 120   # total frames in one GIF loop
+FPS_PULSE      = 30    # playback speed → 4 s loop @ defaults
+PULSE_CYCLES   = 3     # full brighten/dim breaths per loop → ~1.3 s per breath
+PULSE_DEPTH    = 1.0   # ±100 % swing of each limb-darkening coefficient around its base value
+
+tmp_paths = []
+
+for i in range(N_FRAMES_PULSE):
+
+    scale   = 1.0 + PULSE_DEPTH * np.sin(2.0 * np.pi * PULSE_CYCLES * i / N_FRAMES_PULSE)
+    u_frame = tuple(c * scale for c in u_star)
+
+    surface_pulse = Surface(inc=1.0, obl=0.2, period=27.0, u=u_frame, y=y_frame)
+
+    tmp_path = os.path.join(OUTPUT_DIR, f'_pulse_{i:04d}.png')
+    render_surface_to_png(surface_pulse, tmp_path, theta=0.0, verbose=False)
+    tmp_paths.append(tmp_path)
+    print(f'  Frame {i + 1:3d} / {N_FRAMES_PULSE}', end='\r')
+
+print()
+assemble_gif(tmp_paths, os.path.join(OUTPUT_DIR, 'star_pulse.gif'), FPS_PULSE)
+
+for p in tmp_paths:
+    os.remove(p)
+
+print('\nDone — PNGs and GIFs written to images/')
